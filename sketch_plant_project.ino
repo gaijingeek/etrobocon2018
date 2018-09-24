@@ -71,8 +71,12 @@ void printSensorStartValues() {
 
 void loop() {
   // this keeps checking the moisture to activate/deactivate the pump
-  digitalWrite(pumpDigitalPin, HIGH);
   checkMoistureForPump();
+  // switch led on
+  readLight(false);
+  readTemperature(false);
+  readHumidity(false);
+  readMoisture(false);
   // this manages the click of the switch button 
   clickSwitchButton();  
 }
@@ -91,19 +95,19 @@ void clickSwitchButton(){
   switch(hits){
     case 0:
    //Serial.println("hits = 0");
-    readTemperature();
+    readTemperature(true);
     break;
 
     case 1:
-    readHumidity();
+    readHumidity(true);
     break;
     
     case 2:
-    infoMoisture();
+    readMoisture(true);
     break;
 
     case 3:
-    readLight();
+    readLight(true);
     break;    
 
     default:
@@ -115,25 +119,36 @@ void clickSwitchButton(){
   delay(100);
 }
 
-void readLight() {
+void readLight(bool print) {
   lightVal = analogRead(A0);
-
-  // DISPLAY DATA ON LCD
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Light: "); lcd.print(lightVal, DEC); lcd.print(" Lux");
-  lcd.setCursor(0,1);
-  if(lightVal < 700) {
+  if(print){
+    // DISPLAY DATA ON LCD
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Light: "); lcd.print(lightVal, DEC); lcd.print(" Lux");
+    lcd.setCursor(0,1);
+  }
+  
+  if(lightVal < 500) {
     digitalWrite(ledGreenPin, HIGH);
-    lcd.print("need light");
+    if(print){
+      lcd.print("need light");
+    }
+  } else if (lightVal >= 501 && lightVal < 1000){
+    digitalWrite(ledGreenPin, LOW);
+    if(print){
+      lcd.print("nice sun :)");
+    }
   }
   else {
     digitalWrite(ledGreenPin, HIGH);
-    lcd.print("sunburn!");
+    if(print){
+      lcd.print("sunburn!");
+    }
   }
 }
 
-void readTemperature() {
+void readTemperature(bool print) {
   int chk;
   Serial.print("DHT11, \t");
   chk = DHT.read(DHT11_PIN);    // READ DATA
@@ -156,25 +171,34 @@ void readTemperature() {
   Serial.println(temperature,1);
 
   // DISPLAY DATA ON LCD
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Temp: "); lcd.print(temperature, 1); lcd.print("C");
-  lcd.setCursor(0, 1);
+  if(print) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Temp: "); lcd.print(temperature, 1); lcd.print("C");
+    lcd.setCursor(0, 1);
+  }
+  
   if(temperature < 10) {
     digitalWrite(ledBluePin, HIGH);
-    lcd.print("I'm cold!");
+    if(print){
+      lcd.print("I'm cold!");
+    }
   }
   else if(temperature >= 11 && temperature < 40) {
     digitalWrite(ledBluePin, LOW);
-    lcd.print("Nice weather :)");
+    if(print){
+      lcd.print("Nice weather :)");
+    }
   }
   else {
     digitalWrite(ledBluePin, HIGH);
-    lcd.print("It's too hot!");
+    if(print){
+      lcd.print("It's too hot!");
+    }
   }
 }
 
-void readHumidity() {
+void readHumidity(bool print) {
   int chk;
   Serial.print("DHT11, \t");
   chk = DHT.read(DHT11_PIN);    // READ DATA
@@ -196,21 +220,31 @@ void readHumidity() {
   int humidity = DHT.humidity;
   Serial.print(humidity,1);
   // DISPLAY DATA ON LCD
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Humid: "); lcd.print(humidity, 1); lcd.print("%");
-  lcd.setCursor(0, 1);
+  
+  if (print) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Humid: "); lcd.print(humidity, 1); lcd.print("%");
+    lcd.setCursor(0, 1);
+  }
   if(humidity < 30) {
     digitalWrite(ledYellowPin, HIGH);
-    lcd.print("dry weather..");
+    
+    if (print) {
+      lcd.print("dry weather..");
+    }
   }
   else if (humidity >= 11 && humidity < 50) {
     digitalWrite(ledYellowPin, LOW);
-    lcd.print("nice weather");
+    if(print){
+      lcd.print("nice weather");
+    }
   }
   else {
     digitalWrite(ledYellowPin, HIGH);
-    lcd.print("Too humid :O");
+    if(print){
+      lcd.print("Too humid :/");
+    }
   }
 }
 
@@ -221,25 +255,34 @@ void resetAllLed() {
   digitalWrite(ledBluePin, LOW);
 }
 
-void infoMoisture() {
+void readMoisture(bool print) {
   moistureVal = analogRead(A2);
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Moisture: "); lcd.print(moistureVal, DEC);
-  lcd.setCursor(0,1);
+  if(print){
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Moisture: "); lcd.print(moistureVal, DEC);
+    lcd.setCursor(0,1);
+  }
+  
   if(moistureVal >=0 && moistureVal <= 300) {
-    lcd.print("too dry!");
+    if(print){
+      lcd.print("too dry!");
+    }
     digitalWrite(ledRedPin, HIGH);
     digitalWrite(pumpDigitalPin, HIGH); // activate pump
   }
   else if(moistureVal >300 && moistureVal <=700) {
-    lcd.print("humid");
+    if(print){
+      lcd.print("humid");
+    }
     digitalWrite(ledRedPin, LOW);
     digitalWrite(pumpDigitalPin, LOW); // deactivate pump 
   }
   else {
     digitalWrite(ledRedPin, HIGH);
-    lcd.print("I'm drowning :(");
+    if(print){
+      lcd.print("I'm drowning :(");
+    }
   }
 }
 
