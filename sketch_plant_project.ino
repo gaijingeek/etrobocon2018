@@ -45,7 +45,7 @@ const int ledRedPin = 13;
 const int ledBluePin = 3;
 const int ledGreenPin = 6;
 const int ledYellowPin = 12;
-const int pumpDigitalPin = 17; // Analog pin A3
+const int pumpDigitalPin = 19; // Analog pin A5 
 
 void setup() {
   // set up the number of columns and rows on the LCD
@@ -284,6 +284,7 @@ void readMoisture(bool print) {
       lcd.print("I'm drowning :(");
     }
   }
+  delay(1000);
 }
 
 void checkMoistureForPump() {
